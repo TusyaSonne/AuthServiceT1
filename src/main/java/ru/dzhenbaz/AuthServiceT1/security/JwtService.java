@@ -62,4 +62,9 @@ public class JwtService {
             return false;
         }
     }
+
+    public Instant extractExpiration(String token) {
+        return decode(token).getExpiresAt().toInstant();
+    }
+
 }
