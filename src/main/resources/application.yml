@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+
+
+jwt:
+  secret: "SUPER_SECRET_KEY"
+  access-token:
+    expiration-ms: 900000    # 15 минут
+  refresh-token:
+    expiration-ms: 604800000 # 7 дней
