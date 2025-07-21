@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: changes/v1_create-users-and-roles.yml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/v2_create-user-roles-and-revoked.yml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/v3_insert-roles.yml
+      relativeToChangelogFile: true
