@@ -65,7 +65,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(mapToUserDetails(user));
         String refreshToken = jwtService.generateRefreshToken(mapToUserDetails(user));
 
-        return new AuthResponse(accessToken, refreshToken, "Bearer");
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -79,14 +79,18 @@ public class AuthService {
         String accessToken = jwtService.generateToken(mapToUserDetails(user));
         String refreshToken = jwtService.generateRefreshToken(mapToUserDetails(user));
 
-        return new AuthResponse(accessToken, refreshToken, "Bearer");
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public AuthResponse refreshAccessToken(RefreshTokenRequest request) {
         String refreshToken = request.refreshToken();
 
+        if (!"refresh".equals(jwtService.extractTokenType(refreshToken))) {
+            throw new InvalidRefreshTokenException("Not a refresh token");
+        }
+
         if (revokedTokenRepository.existsByToken(refreshToken)) {
-            throw new RuntimeException("Token has been revoked");
+            throw new InvalidRefreshTokenException("Token has been revoked");
         }
 
         String username = jwtService.extractUsername(refreshToken);
@@ -103,11 +107,18 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateToken(mapToUserDetails(user));
 
-        return new AuthResponse(newAccessToken, refreshToken, "Bearer");
+        return new AuthResponse(newAccessToken, refreshToken);
         //refresh-токен не обновляется, так как он еще валиден (не истек)
     }
 
     public void logout(String refreshToken) {
+
+        String tokenType = jwtService.extractTokenType(refreshToken);
+
+        if (!"refresh".equals(tokenType)) {
+            throw new InvalidRefreshTokenException("Only refresh tokens can be revoked");
+        }
+
         Instant expiry = jwtService.extractExpiration(refreshToken);
 
         if (!revokedTokenRepository.existsByToken(refreshToken)) {

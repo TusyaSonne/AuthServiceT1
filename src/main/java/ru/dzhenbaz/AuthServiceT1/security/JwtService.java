@@ -23,19 +23,20 @@ public class JwtService {
     private long refreshTokenExpirationMs;
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(userDetails, accessTokenExpirationMs);
+        return generateToken(userDetails, accessTokenExpirationMs, "access");
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return generateToken(userDetails, refreshTokenExpirationMs);
+        return generateToken(userDetails, refreshTokenExpirationMs, "refresh");
     }
 
-    private String generateToken(UserDetails userDetails, long expirationMs) {
+    private String generateToken(UserDetails userDetails, long expirationMs, String type) {
         Instant now = Instant.now();
         return JWT.create()
                 .withSubject(userDetails.getUsername())
                 .withClaim("roles", userDetails.getAuthorities().stream()
                         .map(Object::toString).toList())
+                .withClaim("type", type)
                 .withIssuedAt(Date.from(now))
                 .withIssuer("Dzhenbaz")
                 .withExpiresAt(Date.from(now.plusMillis(expirationMs)))
@@ -67,4 +68,7 @@ public class JwtService {
         return decode(token).getExpiresAt().toInstant();
     }
 
+    public String extractTokenType(String token) {
+        return decode(token).getClaim("type").asString();
+    }
 }

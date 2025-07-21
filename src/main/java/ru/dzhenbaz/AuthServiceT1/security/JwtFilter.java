@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,6 +22,12 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
 
+    private static final List<String> PUBLIC_URLS = List.of(
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/refresh",
+            "/api/auth/logout"
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,7 +45,18 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         jwtToken = authHeader.substring(7);
-        username = jwtService.extractUsername(jwtToken);
+
+        try {
+            if (!"access".equals(jwtService.extractTokenType(jwtToken))) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            username = jwtService.extractUsername(jwtToken);
+        } catch (Exception e) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = userDetailsService.loadUserByUsername(username);
@@ -57,4 +75,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return PUBLIC_URLS.stream().anyMatch(path::startsWith);
+    }
+
 }
