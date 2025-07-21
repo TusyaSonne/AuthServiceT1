@@ -3,7 +3,7 @@ package ru.dzhenbaz.AuthServiceT1.dto;
 import jakarta.validation.constraints.NotBlank;
 
 public record RefreshTokenRequest(
-        @NotBlank
+        @NotBlank(message = "Refresh token is required")
         String refreshToken
 ) {
 }

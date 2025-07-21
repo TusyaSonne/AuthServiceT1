@@ -1,6 +1,7 @@
 package ru.dzhenbaz.AuthServiceT1.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -50,7 +52,8 @@ public class AuthService {
                 .orElse(Set.of("ROLE_GUEST"))
                 .stream()
                 .map(name -> roleRepository.findByName(name)
-                        .orElseThrow(() ->  new UserNotCreatedException("Invalid role: " + name)))
+                        .orElseThrow(() ->  new UserNotCreatedException("Invalid role: " + name +
+                                ", allowed roles: ROLE_GUEST, ROLE_ADMIN, ROLE_PREMIUM_USER")))
                 .collect(Collectors.toSet());
 
         User user = User.builder()

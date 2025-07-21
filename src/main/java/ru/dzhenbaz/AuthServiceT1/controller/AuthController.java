@@ -38,6 +38,6 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody @Valid RefreshTokenRequest request) {
         authService.logout(request.refreshToken());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Successfully logged out (refresh-token is blacklisted");
     }
 }
